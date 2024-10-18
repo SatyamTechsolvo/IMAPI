@@ -1,3 +1,4 @@
+import re
 import frappe
 from frappe.utils import now_datetime, format_datetime, add_to_date
 from frappe.integrations.utils import make_get_request
@@ -46,17 +47,34 @@ def create_india_mart_logs(url, results):
         )
     ).insert(ignore_permissions=True)
 
+def clean_html(text):
+    clean_text = re.sub(r'<.*?>', '', text)
+    return clean_text
 
 def create_india_mart_leads(leads):
     for lead in leads:
-        for key, value in lead.items():
-            lead_data = {}
-            if not frappe.db.exists("IndiaMART Query", value):
-                lead_query_doc = frappe.new_doc("IndiaMART Query")
-                lead_data[frappe.scrub(key)] = value
-                lead_query_doc.update(lead_data)
-                lead_query_doc.insert(ignore_permissions=True)
-
+        if (
+            not frappe.db.exists("Lead", {"custom_india_mart_id": lead.get("UNIQUE_QUERY_ID")})
+            and not frappe.db.exists("Lead", {"email_id": lead.get("SENDER_EMAIL")})
+        ):
+            lead_doc = frappe.get_doc(dict(
+                doctype="Lead",
+                lead_name=lead.get("SENDER_NAME"),
+                email_id=lead.get("SENDER_EMAIL"),
+                phone=lead.get("SENDER_MOBILE"),
+                custom_requirement=lead.get("SUBJECT"),
+                custom_indiamart_id=lead.get("UNIQUE_QUERY_ID"),
+                city=lead.get("SENDER_CITY"),
+                state=lead.get("SENDER_STATE"),
+                country="India" if (lead.get("SENDER_COUNTRY_ISO") == "IN") else "",
+                source="India Mart",
+                custom_lead_company=lead.get("SENDER_COMPANY"),
+                custom_pin_code=lead.get("SENDER_PINCODE"),
+                custom_product=lead.get("QUERY_PRODUCT_NAME"),
+                custom_product_details=clean_html(lead.get("QUERY_MESSAGE")),
+                custom_query_type=lead.get("QUERY_TYPE")
+            ))
+            lead_doc.insert(ignore_permissions=True)
 
 def india_mart_cron_job():
     from_time = frappe.db.get_value(
