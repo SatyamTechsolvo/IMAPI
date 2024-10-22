@@ -54,8 +54,8 @@ def clean_html(text):
 def create_india_mart_leads(leads):
     for lead in leads:
         if (
-            not frappe.db.exists("Lead", {"custom_india_mart_id": lead.get("UNIQUE_QUERY_ID")})
-            and not frappe.db.exists("Lead", {"email_id": lead.get("SENDER_EMAIL")})
+            not frappe.db.exists("Lead", {"custom_india_mart_id": lead.get("UNI>
+            and not frappe.db.exists("Lead", {"email_id": lead.get("SENDER_EMAI>
         ):
             lead_doc = frappe.get_doc(dict(
                 doctype="Lead",
@@ -66,13 +66,16 @@ def create_india_mart_leads(leads):
                 custom_indiamart_id=lead.get("UNIQUE_QUERY_ID"),
                 city=lead.get("SENDER_CITY"),
                 state=lead.get("SENDER_STATE"),
-                country="India" if (lead.get("SENDER_COUNTRY_ISO") == "IN") else "",
+                country="India" if (lead.get("SENDER_COUNTRY_ISO") == "IN") els>
                 source="India Mart",
                 custom_lead_company=lead.get("SENDER_COMPANY"),
                 custom_pin_code=lead.get("SENDER_PINCODE"),
                 custom_product=lead.get("QUERY_PRODUCT_NAME"),
                 custom_product_details=clean_html(lead.get("QUERY_MESSAGE")),
-                custom_query_type=lead.get("QUERY_TYPE")
+                custom_query_type=lead.get("QUERY_TYPE"),
+                whatsapp_no=lead.get("SENDER_MOBILE"),
+                custom_sender_address=lead.get("SENDER_ADDRESS"),
+                company_name=lead.get("SENDER_COMPANY")
             ))
             lead_doc.insert(ignore_permissions=True)
 
