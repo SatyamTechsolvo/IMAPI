@@ -76,7 +76,7 @@ def create_india_mart_leads(leads):
     for lead in leads:
         if (
             not frappe.db.exists("Lead", {"custom_india_mart_id": lead.get("UNIQUE_QUERY_ID")})
-            and not frappe.db.exists("Lead", {"email_id": lead.get("SENDER_EMAIL")})
+            and (not lead.get("SENDER_EMAIL") or not frappe.db.exists("Lead", {"email_id": lead.get("SENDER_EMAIL")}))
         ):
             lead_doc = frappe.get_doc(dict(
                 doctype="Lead",
