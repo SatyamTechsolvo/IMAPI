@@ -118,7 +118,7 @@ after_install = "indiamart_connect.setup.after_install"
 
 scheduler_events = {
     "cron": {
-        "*/5 * * * *": ["indiamart_connect.api.india_mart_api.india_mart_cron_job"]
+        "*/10 * * * *": ["indiamart_connect.api.india_mart_api.india_mart_cron_job"]
     }
 }
 
